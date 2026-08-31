@@ -14,6 +14,9 @@ A todo app with both frontend and backend written in PureScript, running on Clou
 
 ```
 .
+├── backend            # PureScript
+│   ├── src
+│   └── test
 ├── frontend           # PureScript + React
 │   ├── src
 │   └── test
