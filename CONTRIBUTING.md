@@ -27,3 +27,5 @@
 - `cd backend && nix flake check` - Run checks (format, PureScript test)
 - `cd backend && nix build . --out-link output` - Compile `src/` into per-module ES modules
 - `cd backend && purs-nix compile` - Generate `output/` for editor/LSP use
+- `cd backend && node --input-type=module -e 'import("./output/Main/index.js").then(m => m.main())'` - Run the dev server
+  (requires `nix build . --out-link output` or `purs-nix compile` first)

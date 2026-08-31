@@ -12,6 +12,7 @@
           "ursi.debug"
           "effect"
           "prelude"
+          "httpurple"
         ];
 
         test-dependencies = [

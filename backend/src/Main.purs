@@ -1,9 +1,20 @@
 module Main where
 
-import Prelude
+import Prelude hiding ((/))
 
-import Debug (todo)
-import Effect (Effect)
+import HTTPurple
 
-main :: Effect Unit
-main = todo
+data Route = Hello String
+
+derive instance Generic Route _
+
+route :: RouteDuplex' Route
+route = mkRoute
+  { "Hello": "hello" / segment
+  }
+
+main :: ServerM
+main =
+  serve { port: 8080 } { route, router }
+  where
+  router { route: Hello name } = ok $ "hello " <> name

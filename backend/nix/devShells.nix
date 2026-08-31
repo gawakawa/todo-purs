@@ -11,6 +11,7 @@ _: {
       devPackages = config.pre-commit.settings.enabledPackages ++ [
         (ps.command { })
         purs-nix.purescript
+        pkgs.nodejs_24
       ];
     in
     {
