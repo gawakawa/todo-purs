@@ -2,7 +2,7 @@
 
 ## Commands
 
-`flake.nix` is split into two independent flakes — root, `frontend/` — each with its own
+`flake.nix` is split into three independent flakes — root, `frontend/`, `backend/` — each with its own
 `flake.lock` and `.envrc`. Run each flake's `nix` commands from its own directory.
 
 ### Root (formatting, lint)
@@ -20,3 +20,10 @@
 - `cd frontend && npm run serve` - Start the dev server at http://localhost:5173
 - `cd frontend && npm run build` - Build for production into `dist/`
   (requires `purs-nix compile` first)
+
+### Backend
+
+- `cd backend && nix fmt` - Format `*.purs`
+- `cd backend && nix flake check` - Run checks (format, PureScript test)
+- `cd backend && nix build . --out-link output` - Compile `src/` into per-module ES modules
+- `cd backend && purs-nix compile` - Generate `output/` for editor/LSP use
