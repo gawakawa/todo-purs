@@ -18,6 +18,7 @@
 - `cd frontend && purs-nix compile` - Generate `output/` for editor/LSP use
 - `cd frontend && npm install` - Install npm dependencies
 - `cd frontend && npm run serve` - Start the dev server at http://localhost:5173
+  (`/api/*` proxies to `http://localhost:8080`, see `vite.config.js`)
 - `cd frontend && npm run build` - Build for production into `dist/`
   (requires `purs-nix compile` first)
 

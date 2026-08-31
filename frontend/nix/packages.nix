@@ -27,6 +27,7 @@
           "ursi.debug"
           "effect"
           "prelude"
+          "fetch"
 
           (with-react purs-nix.ps-pkgs.react-basic [
             "React.Basic"
