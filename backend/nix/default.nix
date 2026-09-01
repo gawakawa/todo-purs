@@ -1,6 +1,6 @@
 _: {
   imports = [
-    ./systems.nix
+    ../../nix/systems.nix
     ./packages.nix
     ./checks.nix
     ./devShells.nix
