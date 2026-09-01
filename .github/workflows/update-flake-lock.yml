@@ -11,11 +11,18 @@ permissions:
 
 jobs:
   update-flake-lock:
+    strategy:
+      matrix:
+        include:
+          - { dir: ".", label: "root" }
+          - { dir: "frontend", label: "frontend" }
+          - { dir: "backend", label: "backend" }
     uses: gawakawa/.github/.github/workflows/update-flake-lock.yml@main
     with:
       auto-merge: true
-      pr-title: "⬆️ Update flake.lock"
-      branch: "update-flake-lock"
+      path-to-flake-dir: ${{ matrix.dir }}
+      pr-title: "⬆️ Update flake.lock (${{ matrix.label }})"
+      branch: "update-flake-lock-${{ matrix.label }}"
     secrets:
       BOT_APP_ID: ${{ secrets.BOT_APP_ID }}
       BOT_PRIVATE_KEY: ${{ secrets.BOT_PRIVATE_KEY }}
