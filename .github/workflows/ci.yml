@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  root:
+  tests:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
@@ -32,71 +32,25 @@ jobs:
       - name: Flake check
         run: nix flake check
 
-  frontend:
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: cachix/install-nix-action@bec50b45a8bb06017c42af46702a3f502adcfa9e # v31
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
-        with:
-          name: gawakawa
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-
-      - name: Flake check
-        run: nix flake check
-
-      - name: Build PureScript output
-        run: nix build . --out-link output
+      - name: Build frontend PureScript output
+        run: nix build .#frontend --out-link frontend/output
 
       - name: Install CI dependencies
         run: nix profile add .#ci
 
-      - name: Install dependencies
+      - name: Install npm dependencies
+        working-directory: frontend
         run: npm ci
 
       - name: Build frontend
+        working-directory: frontend
         run: npm run build
 
-  backend:
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: cachix/install-nix-action@bec50b45a8bb06017c42af46702a3f502adcfa9e # v31
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
-        with:
-          name: gawakawa
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-
-      - name: Flake check
-        run: nix flake check
-
-      - name: Build
-        run: nix build
+      - name: Build backend
+        run: nix build .#backend
 
   ci-success:
-    needs: [root, frontend, backend]
+    needs: [tests]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 1

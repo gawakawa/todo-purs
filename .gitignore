@@ -2,3 +2,16 @@
 result
 .pre-commit-config.yaml
 .mcp.json
+
+bower_components/
+node_modules/
+.pulp-cache/
+output
+generated-docs/
+.psc-package/
+.psc*
+.purs*
+.psa*
+.spago
+main.js
+dist

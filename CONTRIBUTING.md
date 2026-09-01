@@ -2,30 +2,30 @@
 
 ## Commands
 
-`flake.nix` is split into three independent flakes — root, `frontend/`, `backend/` — each with its own
-`flake.lock` and `.envrc`. Run each flake's `nix` commands from its own directory.
+`flake.nix` is a single flake at the repo root. `frontend/` and `backend/` build as separate
+packages (`.#frontend` / `.#backend`) from that one flake; there is no `packages.default`.
 
-### Root (formatting, lint)
+### Root (formatting, lint, both projects' tests)
 
-- `nix fmt` - Format `*.nix` and `*.json`/`*.md`/`*.yaml` repo-wide
-- `nix flake check` - Run format/lint checks (statix, deadnix, actionlint, zizmor, workflow-timeout)
+- `nix fmt` - Format `*.nix`, `*.purs`, and `*.json`/`*.md`/`*.yaml` repo-wide
+- `nix flake check` - Run format/lint checks (statix, deadnix, actionlint, zizmor,
+  workflow-timeout) and both projects' PureScript tests
+- `nix build .#frontend --out-link frontend/output` - Compile `frontend/src/` into per-module ES modules
+- `nix build .#backend --out-link backend/output` - Compile `backend/src/` into per-module ES modules
 
 ### Frontend
 
-- `cd frontend && nix fmt` - Format `*.purs`
-- `cd frontend && nix flake check` - Run checks (format, PureScript test)
-- `cd frontend && nix build . --out-link output` - Compile `src/` into per-module ES modules
 - `cd frontend && purs-nix compile` - Generate `output/` for editor/LSP use
+  (direnv loads the `frontend` devShell here)
 - `cd frontend && npm install` - Install npm dependencies
 - `cd frontend && npm run serve` - Start the dev server at http://localhost:5173
+  (`/api/*` proxies to `http://localhost:8080`, see `vite.config.js`)
 - `cd frontend && npm run build` - Build for production into `dist/`
   (requires `purs-nix compile` first)
 
 ### Backend
 
-- `cd backend && nix fmt` - Format `*.purs`
-- `cd backend && nix flake check` - Run checks (format, PureScript test)
-- `cd backend && nix build . --out-link output` - Compile `src/` into per-module ES modules
 - `cd backend && purs-nix compile` - Generate `output/` for editor/LSP use
+  (direnv loads the `backend` devShell here)
 - `cd backend && node --input-type=module -e 'import("./output/Main/index.js").then(m => m.main())'` - Run the dev server
-  (requires `nix build . --out-link output` or `purs-nix compile` first)
+  (requires `nix build .#backend --out-link backend/output` or `purs-nix compile` first)

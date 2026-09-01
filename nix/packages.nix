@@ -1,15 +1,13 @@
 { inputs, ... }:
 {
   perSystem =
-    { system, ... }:
+    { system, pkgs, ... }:
     let
-      pkgs = import inputs.nixpkgs { inherit system; };
-
       purs-nix = inputs.purs-nix { inherit system; };
 
       node_modules =
         pkgs.importNpmLock.buildNodeModules {
-          npmRoot = ./..;
+          npmRoot = ../frontend;
           nodejs = pkgs.nodejs_24;
         }
         + /node_modules;
@@ -22,11 +20,12 @@
           });
         };
 
-      ps = purs-nix.purs {
+      frontend-ps = purs-nix.purs {
         dependencies = [
           "ursi.debug"
           "effect"
           "prelude"
+          "fetch"
 
           (with-react purs-nix.ps-pkgs.react-basic [
             "React.Basic"
@@ -51,28 +50,41 @@
           ])
         ];
 
-        test-dependencies = [
-          "test-unit"
+        test-dependencies = [ "test-unit" ];
+
+        dir = ../frontend;
+      };
+
+      backend-ps = purs-nix.purs {
+        dependencies = [
+          "ursi.debug"
+          "effect"
+          "prelude"
+          "httpurple"
         ];
 
-        dir = ./..;
+        test-dependencies = [ "test-unit" ];
+
+        dir = ../backend;
       };
 
       ciPackages = with pkgs; [ nodejs_24 ];
     in
     {
-      _module.args = {
-        inherit
-          pkgs
-          ps
-          purs-nix
-          ciPackages
-          ;
-        ps-tools = inputs.ps-tools.legacyPackages.${system};
+      _module.args.projects = {
+        frontend = {
+          ps = frontend-ps;
+          inherit purs-nix;
+        };
+        backend = {
+          ps = backend-ps;
+          inherit purs-nix;
+        };
       };
 
       packages = {
-        default = ps.output { };
+        frontend = frontend-ps.output { };
+        backend = backend-ps.output { };
         ci = pkgs.buildEnv {
           name = "ci";
           paths = ciPackages;

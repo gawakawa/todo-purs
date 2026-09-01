@@ -1,8 +1,7 @@
 module Main where
 
-import Prelude hiding ((/))
-
 import HTTPurple
+import Prelude hiding ((/))
 
 data Route = Hello String
 
@@ -10,7 +9,7 @@ derive instance Generic Route _
 
 route :: RouteDuplex' Route
 route = mkRoute
-  { "Hello": "hello" / segment
+  { "Hello": "api" / "hello" / segment
   }
 
 main :: ServerM
