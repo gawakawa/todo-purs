@@ -7,7 +7,7 @@
 
       node_modules =
         pkgs.importNpmLock.buildNodeModules {
-          npmRoot = ./..;
+          npmRoot = ../frontend;
           nodejs = pkgs.nodejs_24;
         }
         + /node_modules;
@@ -20,7 +20,7 @@
           });
         };
 
-      ps = purs-nix.purs {
+      frontend-ps = purs-nix.purs {
         dependencies = [
           "ursi.debug"
           "effect"
@@ -50,20 +50,39 @@
           ])
         ];
 
-        test-dependencies = [
-          "test-unit"
+        test-dependencies = [ "test-unit" ];
+
+        dir = ../frontend;
+      };
+
+      backend-ps = purs-nix.purs {
+        dependencies = [
+          "ursi.debug"
+          "effect"
+          "prelude"
+          "httpurple"
         ];
 
-        dir = ./..;
+        test-dependencies = [ "test-unit" ];
+
+        dir = ../backend;
       };
 
       ciPackages = with pkgs; [ nodejs_24 ];
     in
     {
-      _module.args.frontend = { inherit ps purs-nix; };
+      _module.args.frontend = {
+        ps = frontend-ps;
+        inherit purs-nix;
+      };
+      _module.args.backend = {
+        ps = backend-ps;
+        inherit purs-nix;
+      };
 
       packages = {
-        frontend = ps.output { };
+        frontend = frontend-ps.output { };
+        backend = backend-ps.output { };
         ci = pkgs.buildEnv {
           name = "ci";
           paths = ciPackages;
