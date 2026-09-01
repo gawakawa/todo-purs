@@ -20,5 +20,5 @@ A todo app with both frontend and backend written in PureScript, running on Clou
 ├── frontend           # PureScript + React
 │   ├── src
 │   └── test
-└── nix                # flake-parts modules for repo-wide formatting/lint (root flake)
+└── nix                # flake-parts modules
 ```

@@ -1,10 +1,8 @@
 { inputs, ... }:
 {
   perSystem =
-    { system, ... }:
+    { system, pkgs, ... }:
     let
-      pkgs = import inputs.nixpkgs { inherit system; };
-
       purs-nix = inputs.purs-nix { inherit system; };
 
       node_modules =
@@ -62,18 +60,10 @@
       ciPackages = with pkgs; [ nodejs_24 ];
     in
     {
-      _module.args = {
-        inherit
-          pkgs
-          ps
-          purs-nix
-          ciPackages
-          ;
-        ps-tools = inputs.ps-tools.legacyPackages.${system};
-      };
+      _module.args.frontend = { inherit ps purs-nix; };
 
       packages = {
-        default = ps.output { };
+        frontend = ps.output { };
         ci = pkgs.buildEnv {
           name = "ci";
           paths = ciPackages;

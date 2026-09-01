@@ -5,8 +5,7 @@ _: {
       pre-commit.settings.hooks = {
         treefmt = {
           enable = true;
-          # oxfmt が対象ファイル0件のバッチでエラーになるため、フィルタなしで一括実行する
-          pass_filenames = false;
+          excludes = [ ".*\\.purs$" ]; # purs-tidy の mtime 問題を回避
         };
         statix.enable = true;
         deadnix.enable = true;

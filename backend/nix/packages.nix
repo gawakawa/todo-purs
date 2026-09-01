@@ -3,8 +3,6 @@
   perSystem =
     { system, ... }:
     let
-      pkgs = import inputs.nixpkgs { inherit system; };
-
       purs-nix = inputs.purs-nix { inherit system; };
 
       ps = purs-nix.purs {
@@ -23,11 +21,8 @@
       };
     in
     {
-      _module.args = {
-        inherit pkgs ps purs-nix;
-        ps-tools = inputs.ps-tools.legacyPackages.${system};
-      };
+      _module.args.backend = { inherit ps purs-nix; };
 
-      packages.default = ps.output { };
+      packages.backend = ps.output { };
     };
 }

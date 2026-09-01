@@ -19,72 +19,32 @@ jobs:
         with:
           persist-credentials: false
 
-      - id: filter
-        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
-        with:
-          filters: |
-            root:
-              - 'nix/**'
-              - 'flake.nix'
-              - 'flake.lock'
-              - '.tidyrc.json'
-              - '.github/workflows/**'
-            frontend:
-              - 'frontend/**'
-              - 'nix/systems.nix'
-              - '.tidyrc.json'
-            backend:
-              - 'backend/**'
-              - 'nix/systems.nix'
-              - '.tidyrc.json'
-
       - uses: cachix/install-nix-action@bec50b45a8bb06017c42af46702a3f502adcfa9e # v31
-        if: steps.filter.outputs.root == 'true' || steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true'
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Cachix
         uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
-        if: steps.filter.outputs.root == 'true' || steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true'
         with:
           name: gawakawa
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Root flake check
-        if: steps.filter.outputs.root == 'true'
-        run: nix flake check
-
-      - name: Frontend flake check
-        if: steps.filter.outputs.frontend == 'true'
-        working-directory: frontend
+      - name: Flake check
         run: nix flake check
 
       - name: Build frontend PureScript output
-        if: steps.filter.outputs.frontend == 'true'
-        working-directory: frontend
-        run: nix build . --out-link output
+        run: nix build .#frontend --out-link frontend/output
 
-      - name: Install frontend CI dependencies
-        if: steps.filter.outputs.frontend == 'true'
-        working-directory: frontend
+      - name: Install CI dependencies
         run: nix profile add .#ci
 
       - name: Install npm dependencies
-        if: steps.filter.outputs.frontend == 'true'
         working-directory: frontend
         run: npm ci
 
       - name: Build frontend
-        if: steps.filter.outputs.frontend == 'true'
         working-directory: frontend
         run: npm run build
 
-      - name: Backend flake check
-        if: steps.filter.outputs.backend == 'true'
-        working-directory: backend
-        run: nix flake check
-
       - name: Build backend
-        if: steps.filter.outputs.backend == 'true'
-        working-directory: backend
-        run: nix build
+        run: nix build .#backend
