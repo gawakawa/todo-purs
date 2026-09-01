@@ -3,8 +3,7 @@ _: {
     {
       config,
       pkgs,
-      frontend,
-      backend,
+      projects,
       ...
     }:
     let
@@ -29,8 +28,8 @@ _: {
             ${config.pre-commit.shellHook}
           '';
         };
-        frontend = mkShell frontend;
-        backend = mkShell backend;
+        frontend = mkShell projects.frontend;
+        backend = mkShell projects.backend;
       };
     };
 }

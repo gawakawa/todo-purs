@@ -1,10 +1,10 @@
 _: {
   perSystem =
-    { frontend, backend, ... }:
+    { projects, ... }:
     {
       checks = {
-        frontend-tests = frontend.ps.test.check { };
-        backend-tests = backend.ps.test.check { };
+        frontend-tests = projects.frontend.ps.test.check { };
+        backend-tests = projects.backend.ps.test.check { };
       };
     };
 }

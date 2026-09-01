@@ -71,13 +71,15 @@
       ciPackages = with pkgs; [ nodejs_24 ];
     in
     {
-      _module.args.frontend = {
-        ps = frontend-ps;
-        inherit purs-nix;
-      };
-      _module.args.backend = {
-        ps = backend-ps;
-        inherit purs-nix;
+      _module.args.projects = {
+        frontend = {
+          ps = frontend-ps;
+          inherit purs-nix;
+        };
+        backend = {
+          ps = backend-ps;
+          inherit purs-nix;
+        };
       };
 
       packages = {
