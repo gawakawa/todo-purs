@@ -26,9 +26,19 @@ packages (`.#frontend` / `.#backend`) from that one flake; there is no `packages
 
 ### Backend
 
+`backend/wrangler.jsonc`'s top level is local dev (no static assets; the Vite dev server serves the
+frontend and proxies `/api`). `env.production` adds `assets` and the real D1 `database_id` for the
+deployed Worker, which serves both the frontend and the API from one origin.
+
 - `cd backend && npm install` - Install `wrangler` (npm devDependency, not part of the Nix devShell)
 - `cd backend && purs-nix compile` - Generate `output/` for editor/LSP use
   (direnv loads the `backend` devShell here)
 - `cd backend && npm run dev` - Start the dev server at http://localhost:8787
   (requires `purs-nix compile` first; HTTPurple listens on port 8080 inside the Worker, see `index.js`)
-- `cd backend && npx wrangler d1 migrations apply todo-purs --local` - Apply `backend/migrations/` to the local D1 database
+- `cd backend && npm run migrate:local` - Apply `backend/migrations/` to the local D1 database
+- `cd backend && npm run migrate:remote` - Apply `backend/migrations/` to the production D1 database
+- `cd backend && npm run deploy` - Deploy to Cloudflare Workers
+  (requires `nix build .#frontend --out-link frontend/output && cd frontend && npm run build` and
+  `nix build .#backend --out-link backend/output` first)
+
+Pushes to `main` deploy automatically via `.github/workflows/deploy.yml`.

@@ -3,7 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --env production",
+    "migrate:local": "wrangler d1 migrations apply todo-purs --local",
+    "migrate:remote": "wrangler d1 migrations apply todo-purs --remote --env production"
   },
   "devDependencies": {
     "wrangler": "^4"
