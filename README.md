@@ -10,6 +10,8 @@ A todo app with both frontend and backend written in PureScript, running on Clou
 
 ## Usage
 
+https://todo-purs.1ota.workers.dev/
+
 ## Directory Structure
 
 ```
