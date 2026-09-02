@@ -1,0 +1,14 @@
+{
+  "name": "todo-purs-backend",
+  "main": "index.js",
+  "compatibility_date": "2026-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "todo-purs",
+      "database_id": "local-placeholder",
+      "migrations_dir": "migrations",
+    },
+  ],
+}
