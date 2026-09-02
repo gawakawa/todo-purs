@@ -61,6 +61,8 @@
           "effect"
           "prelude"
           "httpurple"
+          "aff-promise"
+          "argonaut-core"
         ];
 
         test-dependencies = [ "test-unit" ];

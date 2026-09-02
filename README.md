@@ -15,8 +15,10 @@ A todo app with both frontend and backend written in PureScript, running on Clou
 ```
 .
 ├── backend            # PureScript
+│   ├── migrations     # D1 schema migrations
 │   ├── src
-│   └── test
+│   ├── test
+│   └── wrangler.jsonc # Cloudflare Workers config
 ├── frontend           # PureScript + React
 │   ├── src
 │   └── test

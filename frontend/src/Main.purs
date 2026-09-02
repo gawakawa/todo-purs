@@ -22,7 +22,7 @@ mkApp :: Component Unit
 mkApp = component "App" \_ ->
   React.do
     result <- useAff unit $ attempt do
-      { status, text } <- fetch "/api/hello/world" {}
+      { status, text } <- fetch "/api/todos" {}
       body <- text
       pure { status, body }
     let
