@@ -2,7 +2,9 @@
   "name": "todo-purs",
   "main": "index.js",
   "compatibility_date": "2026-09-02",
-  "compatibility_flags": ["nodejs_compat"],
+  // global_fetch_strictly_public: httpServerHandler self-fetches the Worker's own URL;
+  // without this flag that fails with error 1042 on workers.dev.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   // Top level = local dev (wrangler dev). No assets: the frontend is served by
   // the Vite dev server, which proxies /api to this Worker (see frontend/vite.config.js).
   "d1_databases": [
