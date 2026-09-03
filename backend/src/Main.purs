@@ -15,5 +15,5 @@ main =
   serve { port: 8080, closingHandler: NoClosingHandler } { route, router }
   where
   router _ = do
-    rows <- query "SELECT id, title FROM todos ORDER BY id" []
+    rows <- query "SELECT id, title, completed FROM todos ORDER BY id" []
     ok' jsonHeaders $ stringify $ fromArray rows
