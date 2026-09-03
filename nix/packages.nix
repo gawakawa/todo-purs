@@ -63,6 +63,11 @@
           "httpurple"
           "aff-promise"
           "argonaut-core"
+          "argonaut"
+          (purs-nix.build {
+            name = "httpurple-argonaut";
+            src.registry.version = "1.0.1";
+          })
         ];
 
         test-dependencies = [ "test-unit" ];
