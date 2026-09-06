@@ -26,6 +26,7 @@
           "effect"
           "prelude"
           "fetch"
+          "argonaut"
 
           (with-react purs-nix.ps-pkgs.react-basic [
             "React.Basic"
