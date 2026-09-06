@@ -2,158 +2,74 @@ module Main where
 
 import Prelude
 
-import Data.Argonaut
-  ( class DecodeJson
-  , decodeJson
-  , encodeJson
-  , parseJson
-  , printJsonDecodeError
-  , stringify
-  )
+import Api (createTodo, deleteTodo, fetchTodos, updateCompleted)
 import Data.Array (filter)
-import Data.Either (Either(..), either)
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String (trim)
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Aff (Aff, attempt, launchAff_, throwError)
+import Effect.Aff (Aff, attempt, launchAff_)
 import Effect.Class (liftEffect)
-import Effect.Exception (error, message, throw)
-import Fetch (Method(..), fetch)
+import Effect.Exception (message, throw)
 import React.Basic (keyed)
 import React.Basic.DOM as R
 import React.Basic.DOM.Client (createRoot, renderRoot)
-import React.Basic.DOM.Events (preventDefault, targetValue)
-import React.Basic.Events (handler, handler_)
 import React.Basic.Hooks (Component, component, useEffectOnce, useState, useState')
 import React.Basic.Hooks as React
+import Todo (Todo)
+import TodoForm (mkTodoForm)
+import TodoItem (mkTodoItem)
 import Web.DOM.NonElementParentNode (getElementById)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (toNonElementParentNode)
 import Web.HTML.Window (document)
 
-type Todo = { id :: Int, title :: String, completed :: Boolean }
-
-api :: String
-api = "/api/todos"
-
-decodeBody :: forall a. DecodeJson a => String -> Aff a
-decodeBody body =
-  either (throwError <<< error <<< printJsonDecodeError) pure
-    (parseJson body >>= decodeJson)
-
-getTodos :: Aff (Array Todo)
-getTodos = do
-  { status, text } <- fetch api {}
-  body <- text
-  case status of
-    200 -> decodeBody body
-    _ -> throwError $ error $ "一覧の取得に失敗しました (" <> show status <> "): " <> body
-
-addTodo :: String -> Aff (Array Todo -> Array Todo)
-addTodo title = do
-  { status, text } <- fetch api
-    { method: POST
-    , headers: { "Content-Type": "application/json" }
-    , body: stringify $ encodeJson { title }
-    }
-  body <- text
-  case status of
-    201 -> do
-      todo <- decodeBody body
-      pure (_ <> [ todo ])
-    _ -> throwError $ error $ "追加に失敗しました (" <> show status <> "): " <> body
-
-setCompleted :: Todo -> Aff (Array Todo -> Array Todo)
-setCompleted todo = do
-  { status, text } <- fetch (api <> "/" <> show todo.id)
-    { method: PATCH
-    , headers: { "Content-Type": "application/json" }
-    , body: stringify $ encodeJson { completed: not todo.completed }
-    }
-  body <- text
-  case status of
-    200 -> do
-      updated <- decodeBody body
-      pure $ map \t -> if t.id == updated.id then updated else t
-    404 -> throwError $ error "この todo はすでに削除されています"
-    _ -> throwError $ error $ "更新に失敗しました (" <> show status <> "): " <> body
-
-deleteTodo :: Int -> Aff (Array Todo -> Array Todo)
-deleteTodo id = do
-  { status, text } <- fetch (api <> "/" <> show id) { method: DELETE }
-  case status of
-    204 -> pure $ filter (\t -> t.id /= id)
-    404 -> throwError $ error "この todo はすでに削除されています"
-    _ -> do
-      body <- text
-      throwError $ error $ "削除に失敗しました (" <> show status <> "): " <> body
-
 mkApp :: Component Unit
-mkApp = component "App" \_ ->
-  React.do
+mkApp = do
+  todoForm <- mkTodoForm
+  todoItem <- mkTodoItem
+  component "App" \_ -> React.do
     todos /\ setTodos <- useState (Nothing :: Maybe (Array Todo))
-    err /\ setErr <- useState' (Nothing :: Maybe String)
-    draft /\ setDraft <- useState' ""
-
-    useEffectOnce do
-      launchAff_ do
-        r <- attempt getTodos
-        liftEffect case r of
-          Left e -> setErr $ Just $ message e
-          Right ts -> setTodos \_ -> Just ts
-      pure mempty
+    error /\ setError <- useState' (Nothing :: Maybe String)
 
     let
-      run :: Aff (Array Todo -> Array Todo) -> Effect Unit
-      run aff = launchAff_ do
-        r <- attempt aff
-        liftEffect case r of
-          Left e -> setErr $ Just $ message e
-          Right f -> setErr Nothing *> setTodos (map f)
+      -- Failures surface as a message instead of touching the todo list.
+      runRequest :: forall a. Aff a -> (a -> Effect Unit) -> Effect Unit
+      runRequest aff onSuccess = launchAff_ do
+        result <- attempt aff
+        liftEffect case result of
+          Left e -> setError $ Just $ message e
+          Right a -> setError Nothing *> onSuccess a
 
-      onSubmit = handler preventDefault \_ ->
-        case trim draft of
-          "" -> pure unit
-          title -> do
-            run $ addTodo title
-            setDraft ""
+      addTodo title = runRequest (createTodo title) \created ->
+        setTodos $ map (_ <> [ created ])
 
-      row todo = keyed (show todo.id) $ R.li_
-        [ R.input
-            { type: "checkbox"
-            , checked: todo.completed
-            , onChange: handler_ $ run $ setCompleted todo
-            }
-        , R.text todo.title
-        , R.button
-            { onClick: handler_ $ run $ deleteTodo todo.id
-            , children: [ R.text "削除" ]
-            }
-        ]
+      toggleTodo todo = runRequest
+        (updateCompleted todo.id (not todo.completed))
+        \updated ->
+          setTodos $ map (map \t -> if t.id == updated.id then updated else t)
 
-      errView = case err of
-        Nothing -> R.text ""
-        Just msg -> R.p_ [ R.text msg ]
+      removeTodo todo = runRequest (deleteTodo todo.id) \_ ->
+        setTodos $ map (filter \t -> t.id /= todo.id)
 
-      listView = case todos of
-        Nothing -> R.text "Loading..."
-        Just ts -> R.ul_ (map row ts)
+    useEffectOnce do
+      runRequest fetchTodos \fetched -> setTodos \_ -> Just fetched
+      pure mempty
 
     pure $ R.div_
       [ R.h1_ [ R.text "todo" ]
-      , R.form
-          { onSubmit
-          , children:
-              [ R.input
-                  { value: draft
-                  , onChange: handler targetValue (setDraft <<< fromMaybe "")
-                  }
-              , R.button { type: "submit", children: [ R.text "追加" ] }
-              ]
-          }
-      , errView
-      , listView
+      , todoForm { onSubmit: addTodo }
+      , case error of
+          Nothing -> mempty
+          Just msg -> R.p_ [ R.text msg ]
+      , case todos of
+          Nothing -> R.text "Loading..."
+          Just loaded -> R.ul_ $ loaded <#> \todo ->
+            keyed (show todo.id) $ todoItem
+              { todo
+              , onToggle: toggleTodo todo
+              , onDelete: removeTodo todo
+              }
       ]
 
 main :: Effect Unit
