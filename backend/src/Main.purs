@@ -3,20 +3,18 @@ module Main where
 import Prelude hiding ((/))
 
 import Control.Monad.Trans.Class (lift)
-import Data.Argonaut (class EncodeJson, encodeJson, printJsonDecodeError)
+import Data.Argonaut (encodeJson, printJsonDecodeError)
 import Data.Array (head, null)
 import Data.Either (either)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Db (query)
-import Effect.Aff.Class (class MonadAff)
 import Effect.Exception (message)
 import HTTPurple
   ( ClosingHandler(..)
   , Method(..)
   , Request
-  , Response
   , ResponseM
   , RouteDuplex'
   , ServerM
@@ -62,7 +60,9 @@ main =
 router :: Request Route -> ResponseM
 router { route: AllTodos, method: Get } = do
   rows <- query "SELECT id, title, completed FROM todos ORDER BY id" []
-  either (internalServerError <<< message) jsonOk $ traverse decodeTodo rows
+  either (internalServerError <<< message)
+    (ok' jsonHeaders <<< toJson Argonaut.jsonEncoder)
+    $ traverse decodeTodo rows
 
 router { route: AllTodos, method: Post, body } = usingCont do
   { title } :: NewTodo <- fromJsonE Argonaut.jsonDecoder
@@ -74,8 +74,10 @@ router { route: AllTodos, method: Post, body } = usingCont do
     [ encodeJson valid ]
   case head rows of
     Nothing -> internalServerError "insert returned no row"
-    Just row -> either (internalServerError <<< message) jsonCreated $
-      decodeTodo row
+    Just row ->
+      either (internalServerError <<< message)
+        (response' Status.created jsonHeaders <<< toJson Argonaut.jsonEncoder)
+        $ decodeTodo row
 
 router { route: AllTodos } = methodNotAllowed
 
@@ -88,17 +90,13 @@ router { route: SingleTodo id, method: Patch, body } = usingCont do
     [ encodeJson (if completed then 1 else 0), encodeJson id ]
   case head rows of
     Nothing -> notFound
-    Just row -> either (internalServerError <<< message) jsonOk $ decodeTodo row
+    Just row ->
+      either (internalServerError <<< message)
+        (ok' jsonHeaders <<< toJson Argonaut.jsonEncoder)
+        $ decodeTodo row
 
 router { route: SingleTodo id, method: Delete } = do
   rows <- query "DELETE FROM todos WHERE id = ? RETURNING id" [ encodeJson id ]
   if null rows then notFound else noContent
 
 router { route: SingleTodo _ } = methodNotAllowed
-
-jsonOk :: forall m a. MonadAff m => EncodeJson a => a -> m Response
-jsonOk = ok' jsonHeaders <<< toJson Argonaut.jsonEncoder
-
-jsonCreated :: forall m a. MonadAff m => EncodeJson a => a -> m Response
-jsonCreated = response' Status.created jsonHeaders <<< toJson
-  Argonaut.jsonEncoder
