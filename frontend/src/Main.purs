@@ -33,7 +33,7 @@ mkApp = do
     error /\ setError <- useState' (Nothing :: Maybe String)
 
     let
-      addTodo title = launchAff_ do
+      handleSubmit title = launchAff_ do
         result <- attempt $ createTodo title
         liftEffect case result of
           Left e -> setError $ Just $ message e
@@ -41,7 +41,7 @@ mkApp = do
             setError Nothing
             setTodos $ map (_ <> [ created ])
 
-      toggleTodo todo = launchAff_ do
+      handleToggle todo = launchAff_ do
         result <- attempt $ updateCompleted todo.id (not todo.completed)
         liftEffect case result of
           Left e -> setError $ Just $ message e
@@ -49,7 +49,7 @@ mkApp = do
             setError Nothing
             setTodos $ map (map \t -> if t.id == updated.id then updated else t)
 
-      removeTodo todo = launchAff_ do
+      handleDelete todo = launchAff_ do
         result <- attempt $ deleteTodo todo.id
         liftEffect case result of
           Left e -> setError $ Just $ message e
@@ -67,7 +67,7 @@ mkApp = do
 
     pure $ R.div_
       [ R.h1_ [ R.text "todo" ]
-      , todoForm { onSubmit: addTodo }
+      , todoForm { onSubmit: handleSubmit }
       , case error of
           Nothing -> mempty
           Just msg -> R.p_ [ R.text msg ]
@@ -76,8 +76,8 @@ mkApp = do
           Just loaded -> R.ul_ $ loaded <#> \todo ->
             keyed (show todo.id) $ todoItem
               { todo
-              , onToggle: toggleTodo todo
-              , onDelete: removeTodo todo
+              , onToggle: handleToggle todo
+              , onDelete: handleDelete todo
               }
       ]
 

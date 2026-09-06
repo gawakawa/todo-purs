@@ -19,7 +19,7 @@ mkTodoForm = component "TodoForm" \{ onSubmit } -> React.do
   draft /\ setDraft <- useState' ""
 
   let
-    submit = handler preventDefault \_ ->
+    handleSubmit = handler preventDefault \_ ->
       case trim draft of
         "" -> pure unit
         title -> do
@@ -27,7 +27,7 @@ mkTodoForm = component "TodoForm" \{ onSubmit } -> React.do
           setDraft ""
 
   pure $ R.form
-    { onSubmit: submit
+    { onSubmit: handleSubmit
     , children:
         [ R.input
             { value: draft
