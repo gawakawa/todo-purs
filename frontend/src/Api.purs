@@ -16,8 +16,11 @@ import Effect.Exception (error)
 import Fetch (Method(..), fetch)
 import Todo (Todo)
 
-endpoint :: String
-endpoint = "/api/todos"
+data Route = AllTodos | SingleTodo Int
+
+path :: Route -> String
+path AllTodos = "/api/todos"
+path (SingleTodo id) = path AllTodos <> "/" <> show id
 
 decodeBody :: forall a. DecodeJson a => String -> Aff a
 decodeBody body =
@@ -26,7 +29,7 @@ decodeBody body =
 
 fetchTodos :: Aff (Array Todo)
 fetchTodos = do
-  { status, text } <- fetch endpoint {}
+  { status, text } <- fetch (path AllTodos) {}
   body <- text
   case status of
     200 -> decodeBody body
@@ -34,7 +37,7 @@ fetchTodos = do
 
 createTodo :: String -> Aff Todo
 createTodo title = do
-  { status, text } <- fetch endpoint
+  { status, text } <- fetch (path AllTodos)
     { method: POST
     , headers: { "Content-Type": "application/json" }
     , body: stringify $ encodeJson { title }
@@ -46,7 +49,7 @@ createTodo title = do
 
 updateCompleted :: Int -> Boolean -> Aff Todo
 updateCompleted id completed = do
-  { status, text } <- fetch (endpoint <> "/" <> show id)
+  { status, text } <- fetch (path (SingleTodo id))
     { method: PATCH
     , headers: { "Content-Type": "application/json" }
     , body: stringify $ encodeJson { completed }
@@ -59,7 +62,7 @@ updateCompleted id completed = do
 
 deleteTodo :: Int -> Aff Unit
 deleteTodo id = do
-  { status, text } <- fetch (endpoint <> "/" <> show id) { method: DELETE }
+  { status, text } <- fetch (path (SingleTodo id)) { method: DELETE }
   case status of
     204 -> pure unit
     404 -> throwError $ error "この todo はすでに削除されています"
