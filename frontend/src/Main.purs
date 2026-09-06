@@ -8,7 +8,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Aff (Aff, attempt, launchAff_)
+import Effect.Aff (attempt, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Exception (message, throw)
 import React.Basic (keyed)
@@ -33,27 +33,36 @@ mkApp = do
     error /\ setError <- useState' (Nothing :: Maybe String)
 
     let
-      -- Failures surface as a message instead of touching the todo list.
-      runRequest :: forall a. Aff a -> (a -> Effect Unit) -> Effect Unit
-      runRequest aff onSuccess = launchAff_ do
-        result <- attempt aff
+      addTodo title = launchAff_ do
+        result <- attempt $ createTodo title
         liftEffect case result of
           Left e -> setError $ Just $ message e
-          Right a -> setError Nothing *> onSuccess a
+          Right created -> do
+            setError Nothing
+            setTodos $ map (_ <> [ created ])
 
-      addTodo title = runRequest (createTodo title) \created ->
-        setTodos $ map (_ <> [ created ])
+      toggleTodo todo = launchAff_ do
+        result <- attempt $ updateCompleted todo.id (not todo.completed)
+        liftEffect case result of
+          Left e -> setError $ Just $ message e
+          Right updated -> do
+            setError Nothing
+            setTodos $ map (map \t -> if t.id == updated.id then updated else t)
 
-      toggleTodo todo = runRequest
-        (updateCompleted todo.id (not todo.completed))
-        \updated ->
-          setTodos $ map (map \t -> if t.id == updated.id then updated else t)
-
-      removeTodo todo = runRequest (deleteTodo todo.id) \_ ->
-        setTodos $ map (filter \t -> t.id /= todo.id)
+      removeTodo todo = launchAff_ do
+        result <- attempt $ deleteTodo todo.id
+        liftEffect case result of
+          Left e -> setError $ Just $ message e
+          Right _ -> do
+            setError Nothing
+            setTodos $ map (filter \t -> t.id /= todo.id)
 
     useEffectOnce do
-      runRequest fetchTodos \fetched -> setTodos \_ -> Just fetched
+      launchAff_ do
+        result <- attempt fetchTodos
+        liftEffect case result of
+          Left e -> setError $ Just $ message e
+          Right fetched -> setTodos \_ -> Just fetched
       pure mempty
 
     pure $ R.div_
