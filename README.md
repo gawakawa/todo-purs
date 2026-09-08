@@ -24,5 +24,7 @@ https://todo-purs.1ota.workers.dev/
 ├── frontend           # PureScript + React
 │   ├── src
 │   └── test
-└── nix                # flake-parts modules
+├── nix                # flake-parts modules
+└── shared             # PureScript, imported by both frontend and backend
+    └── src
 ```

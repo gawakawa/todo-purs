@@ -14,7 +14,7 @@ import React.Basic (keyed)
 import React.Basic.DOM as R
 import React.Basic.Hooks (Component, component, useEffectOnce, useState, useState')
 import React.Basic.Hooks as React
-import Todo (Todo)
+import Shared.Todo (Todo)
 import TodoForm (mkTodoForm)
 import TodoItem (mkTodoItem)
 

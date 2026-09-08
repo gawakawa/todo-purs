@@ -6,7 +6,7 @@ import Effect (Effect)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (Component, component)
-import Todo (Todo)
+import Shared.Todo (Todo)
 
 type Props =
   { todo :: Todo

@@ -27,6 +27,7 @@
           "prelude"
           "fetch"
           "argonaut"
+          "routing-duplex"
 
           (with-react purs-nix.ps-pkgs.react-basic [
             "React.Basic"
@@ -54,6 +55,10 @@
         test-dependencies = [ "test-unit" ];
 
         dir = ../frontend;
+        srcs = [
+          "src"
+          "../shared/src"
+        ];
       };
 
       backend-ps = purs-nix.purs {
@@ -65,6 +70,7 @@
           "aff-promise"
           "argonaut-core"
           "argonaut"
+          "routing-duplex"
           (purs-nix.build {
             name = "httpurple-argonaut";
             src.registry.version = "1.0.1";
@@ -74,6 +80,10 @@
         test-dependencies = [ "test-unit" ];
 
         dir = ../backend;
+        srcs = [
+          "src"
+          "../shared/src"
+        ];
       };
 
       ciPackages = with pkgs; [ nodejs_24 ];

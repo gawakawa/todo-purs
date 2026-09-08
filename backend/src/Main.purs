@@ -1,12 +1,11 @@
 module Main where
 
-import Prelude hiding ((/))
+import Prelude
 
 import Control.Monad.Trans.Class (lift)
 import Data.Argonaut (encodeJson, printJsonDecodeError)
 import Data.Array (head, null)
 import Data.Either (either)
-import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
 import Db (query)
@@ -16,42 +15,26 @@ import HTTPurple
   , Method(..)
   , Request
   , ResponseM
-  , RouteDuplex'
   , ServerM
   , badRequest
   , fromValidatedE
-  , int
   , internalServerError
   , jsonHeaders
   , methodNotAllowed
-  , noArgs
   , noContent
   , notFound
   , ok'
-  , prefix
   , response'
-  , root
-  , segment
   , serve
-  , sum
   , toJson
   , usingCont
-  , (/)
   )
 import HTTPurple.Json (fromJsonE)
 import HTTPurple.Json.Argonaut as Argonaut
 import HTTPurple.Status as Status
-import Todo (NewTodo, TodoPatch, decodeTodo, validateTitle)
-
-data Route = AllTodos | SingleTodo Int
-
-derive instance Generic Route _
-
-route :: RouteDuplex' Route
-route = root $ prefix "api" $ sum
-  { "AllTodos": "todos" / noArgs
-  , "SingleTodo": "todos" / int segment
-  }
+import Shared.Route (Route(..), route)
+import Shared.Todo (NewTodo, TodoPatch)
+import Todo (decodeTodo, validateTitle)
 
 main :: ServerM
 main =
