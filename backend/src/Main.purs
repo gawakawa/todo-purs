@@ -2,13 +2,14 @@ module Main where
 
 import Prelude
 
+import Backend.Db (query)
+import Backend.Todo (decodeTodo, validateTitle)
 import Control.Monad.Trans.Class (lift)
 import Data.Argonaut (encodeJson, printJsonDecodeError)
 import Data.Array (head, null)
 import Data.Either (either)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
-import Db (query)
 import Effect.Exception (message)
 import HTTPurple
   ( ClosingHandler(..)
@@ -34,7 +35,6 @@ import HTTPurple.Json.Argonaut as Argonaut
 import HTTPurple.Status as Status
 import Shared.Route (Route(..), route)
 import Shared.Todo (NewTodo, TodoPatch)
-import Todo (decodeTodo, validateTitle)
 
 main :: ServerM
 main =

@@ -1,4 +1,4 @@
-module Todo (decodeTodo, validateTitle) where
+module Backend.Todo (decodeTodo, validateTitle) where
 
 import Prelude
 

@@ -1,4 +1,4 @@
-module Api (fetchTodos, createTodo, updateCompleted, deleteTodo) where
+module Frontend.Api (fetchTodos, createTodo, updateCompleted, deleteTodo) where
 
 import Prelude
 

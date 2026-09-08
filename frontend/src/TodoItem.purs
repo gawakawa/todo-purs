@@ -1,4 +1,4 @@
-module TodoItem (Props, mkTodoItem) where
+module Frontend.TodoItem (Props, mkTodoItem) where
 
 import Prelude
 

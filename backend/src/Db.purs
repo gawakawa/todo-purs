@@ -1,4 +1,4 @@
-module Db (query) where
+module Backend.Db (query) where
 
 import Control.Promise (Promise, toAffE)
 import Data.Argonaut.Core (Json)

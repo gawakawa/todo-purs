@@ -1,8 +1,7 @@
-module App (mkApp) where
+module Frontend.App (mkApp) where
 
 import Prelude
 
-import Api (createTodo, deleteTodo, fetchTodos, updateCompleted)
 import Data.Array (filter)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -10,13 +9,14 @@ import Data.Tuple.Nested ((/\))
 import Effect.Aff (attempt, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Exception (message)
+import Frontend.Api (createTodo, deleteTodo, fetchTodos, updateCompleted)
+import Frontend.TodoForm (mkTodoForm)
+import Frontend.TodoItem (mkTodoItem)
 import React.Basic (keyed)
 import React.Basic.DOM as R
 import React.Basic.Hooks (Component, component, useEffectOnce, useState, useState')
 import React.Basic.Hooks as React
 import Shared.Todo (Todo)
-import TodoForm (mkTodoForm)
-import TodoItem (mkTodoItem)
 
 mkApp :: Component Unit
 mkApp = do
