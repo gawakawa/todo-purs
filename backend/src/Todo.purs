@@ -1,4 +1,4 @@
-module Todo (Todo, NewTodo, TodoPatch, decodeTodo, validateTitle) where
+module Backend.Todo (decodeTodo, validateTitle) where
 
 import Prelude
 
@@ -7,11 +7,9 @@ import Data.Bifunctor (lmap)
 import Data.Either (Either(..))
 import Data.String (trim)
 import Effect.Exception (Error, error)
+import Shared.Todo (Todo)
 
 type TodoRow = { id :: Int, title :: String, completed :: Int }
-type Todo = { id :: Int, title :: String, completed :: Boolean }
-type NewTodo = { title :: String }
-type TodoPatch = { completed :: Boolean }
 
 fromRow :: TodoRow -> Todo
 fromRow { id, title, completed } = { id, title, completed: completed /= 0 }

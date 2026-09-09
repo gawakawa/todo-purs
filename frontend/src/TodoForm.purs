@@ -1,4 +1,4 @@
-module TodoForm (Props, mkTodoForm) where
+module Frontend.TodoForm (Props, mkTodoForm) where
 
 import Prelude
 

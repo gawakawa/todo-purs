@@ -2,10 +2,10 @@ module Main where
 
 import Prelude
 
-import App (mkApp)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Exception (throw)
+import Frontend.App (mkApp)
 import React.Basic.DOM.Client (createRoot, renderRoot)
 import Web.DOM.NonElementParentNode (getElementById)
 import Web.HTML (window)

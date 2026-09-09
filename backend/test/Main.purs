@@ -2,6 +2,7 @@ module Test.Main where
 
 import Prelude
 
+import Backend.Todo (decodeTodo, validateTitle)
 import Data.Argonaut (encodeJson)
 import Data.Either (Either(..), isLeft)
 import Effect (Effect)
@@ -9,7 +10,6 @@ import Effect.Exception (Error, message)
 import Test.Unit (Test, suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
-import Todo (decodeTodo, validateTitle)
 
 -- Error has no Eq instance, so unwrap Right before comparing.
 assertRight :: forall a. Eq a => Show a => a -> Either Error a -> Test
