@@ -16,15 +16,15 @@ https://todo-purs.1ota.workers.dev/
 
 ```
 .
-├── backend            # PureScript
+├── backend            # Cloudflare Workers + D1
 │   ├── migrations     # D1 schema migrations
 │   ├── src
 │   ├── test
 │   └── wrangler.jsonc # Cloudflare Workers config
-├── frontend           # PureScript + React
+├── frontend           # React
 │   ├── src
 │   └── test
 ├── nix                # flake-parts modules
-└── shared             # PureScript, imported by both frontend and backend
+└── shared             # Imported by both frontend and backend
     └── src
 ```
