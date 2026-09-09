@@ -34,7 +34,7 @@ import HTTPurple.Json (fromJsonE)
 import HTTPurple.Json.Argonaut as Argonaut
 import HTTPurple.Status as Status
 import Shared.Route (Route(..), route)
-import Shared.Todo (NewTodo, TodoPatch)
+import Shared.Todo (CreateTodoRequest, SetCompletedBody)
 
 main :: ServerM
 main =
@@ -48,7 +48,7 @@ router { route: AllTodos, method: Get } = do
     $ traverse decodeTodo rows
 
 router { route: AllTodos, method: Post, body } = usingCont do
-  { title } :: NewTodo <- fromJsonE Argonaut.jsonDecoder
+  { title } :: CreateTodoRequest <- fromJsonE Argonaut.jsonDecoder
     (badRequest <<< printJsonDecodeError)
     body
   valid <- fromValidatedE validateTitle (badRequest <<< message) title
@@ -65,7 +65,7 @@ router { route: AllTodos, method: Post, body } = usingCont do
 router { route: AllTodos } = methodNotAllowed
 
 router { route: SingleTodo id, method: Patch, body } = usingCont do
-  { completed } :: TodoPatch <- fromJsonE Argonaut.jsonDecoder
+  { completed } :: SetCompletedBody <- fromJsonE Argonaut.jsonDecoder
     (badRequest <<< printJsonDecodeError)
     body
   rows <- lift $ query

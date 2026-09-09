@@ -1,4 +1,4 @@
-module Frontend.Api (fetchTodos, createTodo, updateCompleted, deleteTodo) where
+module Frontend.Api (createTodo, deleteTodo, listTodos, setCompleted) where
 
 import Prelude
 
@@ -16,39 +16,49 @@ import Effect.Exception (error)
 import Fetch (Method(..), fetch)
 import Routing.Duplex (print)
 import Shared.Route (Route(..), route)
-import Shared.Todo (NewTodo, Todo, TodoPatch)
+import Shared.Todo
+  ( CreateTodoRequest
+  , CreateTodoResponse
+  , DeleteTodoRequest
+  , DeleteTodoResponse
+  , ListTodosRequest
+  , ListTodosResponse
+  , SetCompletedBody
+  , SetCompletedRequest
+  , SetCompletedResponse
+  )
 
 decodeBody :: forall a. DecodeJson a => String -> Aff a
 decodeBody body =
   either (throwError <<< error <<< printJsonDecodeError) pure
     (parseJson body >>= decodeJson)
 
-fetchTodos :: Aff (Array Todo)
-fetchTodos = do
+listTodos :: ListTodosRequest -> Aff ListTodosResponse
+listTodos _ = do
   { status, text } <- fetch (print route AllTodos) {}
   body <- text
   case status of
     200 -> decodeBody body
     _ -> throwError $ error $ "一覧の取得に失敗しました (" <> show status <> "): " <> body
 
-createTodo :: String -> Aff Todo
-createTodo title = do
+createTodo :: CreateTodoRequest -> Aff CreateTodoResponse
+createTodo req = do
   { status, text } <- fetch (print route AllTodos)
     { method: POST
     , headers: { "Content-Type": "application/json" }
-    , body: stringify $ encodeJson ({ title } :: NewTodo)
+    , body: stringify $ encodeJson req
     }
   body <- text
   case status of
     201 -> decodeBody body
     _ -> throwError $ error $ "追加に失敗しました (" <> show status <> "): " <> body
 
-updateCompleted :: Int -> Boolean -> Aff Todo
-updateCompleted id completed = do
+setCompleted :: SetCompletedRequest -> Aff SetCompletedResponse
+setCompleted { id, completed } = do
   { status, text } <- fetch (print route (SingleTodo id))
     { method: PATCH
     , headers: { "Content-Type": "application/json" }
-    , body: stringify $ encodeJson ({ completed } :: TodoPatch)
+    , body: stringify $ encodeJson ({ completed } :: SetCompletedBody)
     }
   body <- text
   case status of
@@ -56,8 +66,8 @@ updateCompleted id completed = do
     404 -> throwError $ error "この todo はすでに削除されています"
     _ -> throwError $ error $ "更新に失敗しました (" <> show status <> "): " <> body
 
-deleteTodo :: Int -> Aff Unit
-deleteTodo id = do
+deleteTodo :: DeleteTodoRequest -> Aff DeleteTodoResponse
+deleteTodo { id } = do
   { status, text } <- fetch (print route (SingleTodo id)) { method: DELETE }
   case status of
     204 -> pure unit

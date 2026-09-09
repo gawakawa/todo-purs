@@ -9,7 +9,7 @@ import Data.Tuple.Nested ((/\))
 import Effect.Aff (attempt, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Exception (message)
-import Frontend.Api (createTodo, deleteTodo, fetchTodos, updateCompleted)
+import Frontend.Api (createTodo, deleteTodo, listTodos, setCompleted)
 import Frontend.TodoForm (mkTodoForm)
 import Frontend.TodoItem (mkTodoItem)
 import React.Basic (keyed)
@@ -28,7 +28,7 @@ mkApp = do
 
     let
       handleSubmit title = launchAff_ do
-        result <- attempt $ createTodo title
+        result <- attempt $ createTodo { title }
         liftEffect case result of
           Left e -> setError $ Just $ message e
           Right created -> do
@@ -36,7 +36,8 @@ mkApp = do
             setTodos $ map (_ <> [ created ])
 
       handleToggle todo = launchAff_ do
-        result <- attempt $ updateCompleted todo.id (not todo.completed)
+        result <- attempt $ setCompleted
+          { id: todo.id, completed: not todo.completed }
         liftEffect case result of
           Left e -> setError $ Just $ message e
           Right updated -> do
@@ -44,7 +45,7 @@ mkApp = do
             setTodos $ map (map \t -> if t.id == updated.id then updated else t)
 
       handleDelete todo = launchAff_ do
-        result <- attempt $ deleteTodo todo.id
+        result <- attempt $ deleteTodo { id: todo.id }
         liftEffect case result of
           Left e -> setError $ Just $ message e
           Right _ -> do
@@ -53,7 +54,7 @@ mkApp = do
 
     useEffectOnce do
       launchAff_ do
-        result <- attempt fetchTodos
+        result <- attempt $ listTodos {}
         liftEffect case result of
           Left e -> setError $ Just $ message e
           Right fetched -> setTodos \_ -> Just fetched
